@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../utils/app_theme.dart';
 import '../utils/image_mapper.dart';
+import '../utils/difficulty_switch_dialog.dart';
 import '../models/word_model.dart';
 import '../services/storage_service.dart';
 
@@ -478,10 +479,19 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
   Widget _buildLevelToggle(String label, DifficultyLevel level) {
     final isSelected = _selectedLevel == level;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedLevel = level;
-        });
+      onTap: () async {
+        // Show warning dialog if switching from Easy to Standard
+        final shouldSwitch = await DifficultySwitchDialog.showSwitchWarning(
+          context: context,
+          currentLevel: _selectedLevel,
+          targetLevel: level,
+        );
+
+        if (shouldSwitch) {
+          setState(() {
+            _selectedLevel = level;
+          });
+        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

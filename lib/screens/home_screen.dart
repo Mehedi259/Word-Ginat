@@ -7,6 +7,7 @@ import '../services/storage_service.dart';
 import 'word_detail_screen.dart';
 import 'search_screen.dart';
 import 'saved_screen.dart';
+import 'visual_words_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -428,10 +429,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle: 'Visual',
                     color: const Color(0xFFFF4081),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${ImageMapper.imageCount} words with images available in Kids mode!'),
-                          duration: const Duration(seconds: 2),
+                      // Navigate to visual words screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const VisualWordsScreen(),
                         ),
                       );
                     },

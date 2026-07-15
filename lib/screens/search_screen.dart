@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
+import '../utils/difficulty_switch_dialog.dart';
 import '../data/dictionary_data.dart';
 import '../models/word_model.dart';
 import '../services/storage_service.dart';
@@ -131,11 +132,20 @@ class _SearchScreenState extends State<SearchScreen> {
   }) {
     final isSelected = _selectedLevel == level;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedLevel = level;
-        });
-        _performSearch(_searchController.text);
+      onTap: () async {
+        // Show warning dialog if switching from Easy to Standard
+        final shouldSwitch = await DifficultySwitchDialog.showSwitchWarning(
+          context: context,
+          currentLevel: _selectedLevel!,
+          targetLevel: level,
+        );
+
+        if (shouldSwitch) {
+          setState(() {
+            _selectedLevel = level;
+          });
+          _performSearch(_searchController.text);
+        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
