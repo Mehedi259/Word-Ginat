@@ -8,6 +8,7 @@ class WordModel {
   final List<String> antonyms;
   final String? frequencyBand;
   final DifficultyLevel level;
+  final String? imagePath; // Path to dictionary image for kids mode
 
   WordModel({
     required this.word,
@@ -19,6 +20,7 @@ class WordModel {
     this.antonyms = const [],
     this.frequencyBand,
     this.level = DifficultyLevel.easy,
+    this.imagePath,
   });
 
   String get pronunciation {
@@ -37,6 +39,7 @@ class WordModel {
       'antonyms': antonyms,
       'frequency_band': frequencyBand,
       'level': level.toString(),
+      'image_path': imagePath,
     };
   }
 
@@ -51,6 +54,7 @@ class WordModel {
       antonyms: json['antonyms'] != null ? List<String>.from(json['antonyms']) : [],
       frequencyBand: json['frequency_band'],
       level: level ?? DifficultyLevel.easy,
+      imagePath: json['image_path'],
     );
   }
 }

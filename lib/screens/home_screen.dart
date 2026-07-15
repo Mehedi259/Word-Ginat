@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
+import '../utils/image_mapper.dart';
 import '../data/dictionary_data.dart';
 import '../models/word_model.dart';
 import '../services/storage_service.dart';
@@ -423,14 +424,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   _buildQuickAccessCard(
                     icon: Icons.image,
-                    title: '0',
+                    title: ImageMapper.imageCount.toString(),
                     subtitle: 'Visual',
                     color: const Color(0xFFFF4081),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Visual learning coming soon!'),
-                          duration: Duration(seconds: 2),
+                        SnackBar(
+                          content: Text('${ImageMapper.imageCount} words with images available in Kids mode!'),
+                          duration: const Duration(seconds: 2),
                         ),
                       );
                     },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../utils/app_theme.dart';
+import '../utils/image_mapper.dart';
 import '../models/word_model.dart';
 import '../services/storage_service.dart';
 
@@ -65,6 +66,21 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
         ),
       );
     }
+  }
+
+  // Helper method to get image path for a word
+  String? _getImagePath() {
+    // First check if word model has an explicit image path
+    if (widget.word.imagePath != null) {
+      return widget.word.imagePath;
+    }
+    
+    // Use ImageMapper to find image for this word
+    return ImageMapper.getImagePath(widget.word.word);
+  }
+
+  bool _hasImage() {
+    return _getImagePath() != null;
   }
 
   @override
@@ -185,25 +201,93 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                     const SizedBox(height: 24),
 
                     // Image (if Easy mode and has image)
-                    if (_selectedLevel == DifficultyLevel.easy &&
-                        widget.word.word == 'Flower') ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          height: 200,
-                          width: double.infinity,
-                          color: Colors.blue[100],
-                          child: const Icon(
-                            Icons.local_florist,
-                            size: 80,
-                            color: Colors.orange,
+                    if (_selectedLevel == DifficultyLevel.easy && _hasImage()) ...[
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.image,
+                                size: 16,
+                                color: AppTheme.primaryPurple,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'VISUAL REFERENCE',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryPurple,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              height: 240,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Image.asset(
+                                _getImagePath()!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Fallback if image not found
+                                  return Container(
+                                    color: Colors.blue[50],
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.image_not_supported,
+                                            size: 60,
+                                            color: Colors.grey[400],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Image not available',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 24),
                     ],
 
-                    // Definition
+                    // Definition Section
+                    const Text(
+                      'DEFINITION',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textGrey,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     Text(
                       _selectedLevel == DifficultyLevel.easy
                           ? (widget.word.kidFriendlyDefinition ?? widget.word.definition)

@@ -322,11 +322,12 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundGrey,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: const BoxDecoration(
@@ -418,7 +419,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                   ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -477,9 +478,11 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 20), // Add bottom padding
             ],
           ),
         ),
+      ),
       ),
     );
   }
