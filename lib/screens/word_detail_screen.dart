@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../utils/app_theme.dart';
-import '../utils/image_mapper.dart';
+
 import '../utils/difficulty_switch_dialog.dart';
 import '../models/word_model.dart';
 import '../services/storage_service.dart';
@@ -71,13 +71,7 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
 
   // Helper method to get image path for a word
   String? _getImagePath() {
-    // First check if word model has an explicit image path
-    if (widget.word.imagePath != null) {
-      return widget.word.imagePath;
-    }
-    
-    // Use ImageMapper to find image for this word
-    return ImageMapper.getImagePath(widget.word.word);
+    return widget.word.imagePath;
   }
 
   bool _hasImage() {

@@ -144,8 +144,7 @@ lib/
 assets/
 ├── images/                           # App icons, logos, navigation icons
 └── data/                            # Dictionary JSON files
-    ├── Kids_Dictionary_Final_Refined.json       # 123,446 words
-    └── Standard_Dictionary_Final_Refined.json   # 146,722 words
+    └── word_giant_dictionary_v1_025.json        # Main dictionary dataset
 ```
 
 ### Data Models

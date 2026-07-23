@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
-import '../utils/image_mapper.dart';
 import '../data/dictionary_data.dart';
 import '../models/word_model.dart';
 import '../services/storage_service.dart';
@@ -22,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _standardWordCount = 0;
   int _totalWordCount = 0;
   int _savedWordCount = 0;
+  int _visualWordCount = 0;
   int _wordsLearnedToday = 0;
   int _dailyGoal = 10;
   int _streakCount = 0;
@@ -42,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final kidsWords = await DictionaryData.getAllWords(level: DifficultyLevel.easy);
     final standardWords = await DictionaryData.getAllWords(level: DifficultyLevel.standard);
     final allWords = await DictionaryData.getAllWords();
+    final visualCount = kidsWords.where((w) => w.imagePath != null).length;
     
     // Load user stats from storage
     final savedCount = await StorageService.getSavedWordsCount();
@@ -56,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _standardWordCount = standardWords.length;
       _totalWordCount = allWords.length;
       _savedWordCount = savedCount;
+      _visualWordCount = visualCount;
       _wordsLearnedToday = learnedToday;
       _dailyGoal = goal;
       _streakCount = streak;
@@ -425,7 +427,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   _buildQuickAccessCard(
                     icon: Icons.image,
-                    title: ImageMapper.imageCount.toString(),
+                    title: _visualWordCount.toString(),
                     subtitle: 'Visual',
                     color: const Color(0xFFFF4081),
                     onTap: () {

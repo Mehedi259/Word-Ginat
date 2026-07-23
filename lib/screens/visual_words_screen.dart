@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
-import '../utils/image_mapper.dart';
+
 import '../data/dictionary_data.dart';
 import '../models/word_model.dart';
 import 'word_detail_screen.dart';
@@ -30,7 +30,7 @@ class _VisualWordsScreenState extends State<VisualWordsScreen> {
     
     // Filter words that have images
     final wordsWithImages = kidsWords.where((word) {
-      return ImageMapper.hasImage(word.word);
+      return word.imagePath != null;
     }).toList();
     
     // Sort alphabetically
@@ -205,7 +205,7 @@ class _VisualWordsScreenState extends State<VisualWordsScreen> {
   }
 
   Widget _buildWordCard(WordModel word) {
-    final imagePath = ImageMapper.getImagePath(word.word);
+    final imagePath = word.imagePath;
 
     return GestureDetector(
       onTap: () {

@@ -13,22 +13,68 @@ class DictionaryData {
     _isLoading = true;
 
     try {
-      // Load Kids Dictionary
-      if (_kidsWords == null) {
-        final kidsJson = await rootBundle.loadString('assets/data/Kids_Dictionary_Final_Refined.json');
-        final List<dynamic> kidsData = json.decode(kidsJson);
-        _kidsWords = kidsData
-            .map((item) => WordModel.fromJson(item, level: DifficultyLevel.easy))
-            .toList();
-      }
+      if (_kidsWords == null || _standardWords == null) {
+        final dictionaryJson = await rootBundle.loadString('assets/data/word_giant_dictionary_v1_025.json');
+        final List<dynamic> dictionaryData = json.decode(dictionaryJson);
+        
+        final kidsMap = <String, WordModel>{};
+        final standardMap = <String, WordModel>{};
+        
+        WordModel mergeWords(WordModel existing, WordModel newWord) {
+          final combinedPos = existing.partOfSpeech.contains(newWord.partOfSpeech) 
+              ? existing.partOfSpeech 
+              : '${existing.partOfSpeech}, ${newWord.partOfSpeech}';
+              
+          final combinedDef = existing.definition == newWord.definition 
+              ? existing.definition 
+              : '${existing.definition}\n\n[${newWord.partOfSpeech}]\n${newWord.definition}';
+              
+          String? combinedKidDef = existing.kidFriendlyDefinition;
+          if (newWord.kidFriendlyDefinition != null) {
+            if (existing.kidFriendlyDefinition == null) {
+              combinedKidDef = newWord.kidFriendlyDefinition;
+            } else if (existing.kidFriendlyDefinition != newWord.kidFriendlyDefinition) {
+              combinedKidDef = '${existing.kidFriendlyDefinition}\n\n[${newWord.partOfSpeech}]\n${newWord.kidFriendlyDefinition}';
+            }
+          }
 
-      // Load Standard Dictionary
-      if (_standardWords == null) {
-        final standardJson = await rootBundle.loadString('assets/data/Standard_Dictionary_Final_Refined.json');
-        final List<dynamic> standardData = json.decode(standardJson);
-        _standardWords = standardData
-            .map((item) => WordModel.fromJson(item, level: DifficultyLevel.standard))
-            .toList();
+          return WordModel(
+            word: existing.word,
+            partOfSpeech: combinedPos,
+            definition: combinedDef,
+            kidFriendlyDefinition: combinedKidDef,
+            exampleSentence: existing.exampleSentence ?? newWord.exampleSentence,
+            synonyms: {...existing.synonyms, ...newWord.synonyms}.toList(),
+            antonyms: {...existing.antonyms, ...newWord.antonyms}.toList(),
+            frequencyBand: existing.frequencyBand ?? newWord.frequencyBand,
+            level: existing.level,
+            imagePath: existing.imagePath ?? newWord.imagePath,
+          );
+        }
+
+        for (var item in dictionaryData) {
+          if (item['show_in_easy_mode'] == 'Yes') {
+            final word = WordModel.fromJson(item, level: DifficultyLevel.easy);
+            final key = word.word.toLowerCase();
+            if (!kidsMap.containsKey(key)) {
+              kidsMap[key] = word;
+            } else {
+              kidsMap[key] = mergeWords(kidsMap[key]!, word);
+            }
+          }
+          if (item['show_in_standard_mode'] == 'Yes') {
+            final word = WordModel.fromJson(item, level: DifficultyLevel.standard);
+            final key = word.word.toLowerCase();
+            if (!standardMap.containsKey(key)) {
+              standardMap[key] = word;
+            } else {
+              standardMap[key] = mergeWords(standardMap[key]!, word);
+            }
+          }
+        }
+        
+        _kidsWords = kidsMap.values.toList();
+        _standardWords = standardMap.values.toList();
       }
     } catch (e) {
       print('Error loading dictionaries: $e');

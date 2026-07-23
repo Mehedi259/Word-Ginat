@@ -44,17 +44,36 @@ class WordModel {
   }
 
   factory WordModel.fromJson(Map<String, dynamic> json, {DifficultyLevel? level}) {
+    List<String> parseList(dynamic value) {
+      if (value == null) return [];
+      if (value is String) {
+        if (value.isEmpty) return [];
+        return value.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      }
+      if (value is List) {
+        return List<String>.from(value);
+      }
+      return [];
+    }
+
+    String? parseImage(dynamic imageVal, dynamic existingPath) {
+      if (imageVal != null && imageVal is String && imageVal.isNotEmpty && imageVal.toLowerCase() != 'none') {
+        return 'assets/dictionary_images/$imageVal';
+      }
+      return existingPath;
+    }
+
     return WordModel(
       word: json['word'] ?? '',
       partOfSpeech: json['part_of_speech'] ?? 'noun',
       definition: json['full_definition'] ?? '',
       kidFriendlyDefinition: json['kid_friendly_definition'],
       exampleSentence: json['example_sentence'],
-      synonyms: json['synonyms'] != null ? List<String>.from(json['synonyms']) : [],
-      antonyms: json['antonyms'] != null ? List<String>.from(json['antonyms']) : [],
+      synonyms: parseList(json['synonyms']),
+      antonyms: parseList(json['antonyms']),
       frequencyBand: json['frequency_band'],
       level: level ?? DifficultyLevel.easy,
-      imagePath: json['image_path'],
+      imagePath: parseImage(json['image'], json['image_path']),
     );
   }
 }
