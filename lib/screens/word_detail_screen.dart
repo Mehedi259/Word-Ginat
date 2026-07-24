@@ -24,7 +24,11 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
   void initState() {
     super.initState();
     _selectedLevel = widget.word.level;
-    _initTts();
+    _initTts().then((_) {
+      if (StorageService.getAutoPlayPronunciation()) {
+        _speak();
+      }
+    });
     _checkIfSaved();
   }
 

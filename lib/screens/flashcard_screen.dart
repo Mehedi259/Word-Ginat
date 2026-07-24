@@ -16,7 +16,7 @@ class FlashcardScreen extends StatefulWidget {
 
 class _FlashcardScreenState extends State<FlashcardScreen> {
   int _currentIndex = 1;
-  final int _totalCards = 5;
+  int _totalCards = 5;
   bool _showAnswer = false;
   int _correctCount = 0;
   int _wrongCount = 0;
@@ -41,13 +41,44 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     await _flutterTts.speak(text);
   }
 
+  void _playCurrentWord() {
+    if (StorageService.getAutoPlayPronunciation() && _flashcards.isNotEmpty && _currentIndex <= _totalCards) {
+      _speak(_flashcards[_currentIndex - 1].word);
+    }
+  }
+
   Future<void> _loadFlashcards() async {
-    final words = await DictionaryData.getRandomWords(
-      count: _totalCards,
-      level: DifficultyLevel.standard,
-    );
+    List<WordModel> words = [];
+    if (widget.deckTitle == 'Saved Words') {
+      final savedWords = await StorageService.getSavedWords();
+      words = savedWords.map((s) => s.word).toList();
+      words.shuffle();
+    } else if (widget.deckTitle == 'Kids Dictionary') {
+      words = await DictionaryData.getRandomWords(
+        count: 10,
+        level: DifficultyLevel.easy,
+      );
+    } else if (widget.deckTitle == 'Standard Dictionary') {
+      words = await DictionaryData.getRandomWords(
+        count: 10,
+        level: DifficultyLevel.standard,
+      );
+    } else {
+      words = await DictionaryData.getRandomWords(
+        count: 10,
+        level: null,
+      );
+    }
+
     setState(() {
-      _flashcards = words;
+      _flashcards = words.take(5).toList();
+      _totalCards = _flashcards.length;
+      if (_totalCards == 0) {
+        _showResults = true;
+      } else {
+        // Play the first word if auto-play is on
+        _playCurrentWord();
+      }
       _isLoading = false;
     });
   }
@@ -65,10 +96,12 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
       if (_currentIndex < _totalCards) {
         _currentIndex++;
         _showAnswer = false;
+        _playCurrentWord();
       } else {
         _showResults = true;
         // Save quiz score
         StorageService.saveQuizScore(_correctCount, _totalCards);
+        StorageService.addDeckProgress(widget.deckTitle, _correctCount);
       }
     });
   }
@@ -95,6 +128,25 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     }
 
     if (_showResults) {
+      if (_totalCards == 0) {
+        return Scaffold(
+          backgroundColor: AppTheme.backgroundGrey,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: const Center(
+            child: Text(
+              'No words available in this deck.',
+              style: TextStyle(fontSize: 18, color: AppTheme.textGrey),
+            ),
+          ),
+        );
+      }
       return _buildResultsScreen();
     }
 

@@ -12,9 +12,13 @@ class LearnScreen extends StatefulWidget {
 
 class _LearnScreenState extends State<LearnScreen> {
   int _savedWordsCount = 0;
-  int _learnedWordsCount = 0;
   int _wordsLearnedToday = 0;
   int _totalLearned = 0;
+  int _allWordsProgress = 0;
+  int _savedWordsProgress = 0;
+  int _kidsWordsProgress = 0;
+  int _standardWordsProgress = 0;
+  int _mixedWordsProgress = 0;
   bool _isLoading = true;
 
   @override
@@ -25,15 +29,18 @@ class _LearnScreenState extends State<LearnScreen> {
 
   Future<void> _loadStats() async {
     final saved = await StorageService.getSavedWordsCount();
-    final learned = await StorageService.getLearnedWords();
     final today = await StorageService.getWordsLearnedToday();
     final total = await StorageService.getTotalWordsLearned();
 
     setState(() {
       _savedWordsCount = saved;
-      _learnedWordsCount = learned.length;
       _wordsLearnedToday = today;
       _totalLearned = total;
+      _allWordsProgress = StorageService.getDeckProgress('All Words');
+      _savedWordsProgress = StorageService.getDeckProgress('Saved Words');
+      _kidsWordsProgress = StorageService.getDeckProgress('Kids Dictionary');
+      _standardWordsProgress = StorageService.getDeckProgress('Standard Dictionary');
+      _mixedWordsProgress = StorageService.getDeckProgress('Mixed Practice');
       _isLoading = false;
     });
   }
@@ -85,8 +92,8 @@ class _LearnScreenState extends State<LearnScreen> {
               _buildDeckCard(
                 context,
                 title: 'All Words',
-                totalCards: 50,
-                completed: _wordsLearnedToday > 50 ? 50 : _wordsLearnedToday,
+                totalCards: 100,
+                completed: _allWordsProgress > 100 ? 100 : _allWordsProgress,
                 icon: Icons.menu_book,
                 color: AppTheme.primaryBlue,
               ),
@@ -94,8 +101,8 @@ class _LearnScreenState extends State<LearnScreen> {
               _buildDeckCard(
                 context,
                 title: 'Saved Words',
-                totalCards: _savedWordsCount > 0 ? _savedWordsCount : 10,
-                completed: _learnedWordsCount,
+                totalCards: _savedWordsCount > 0 ? _savedWordsCount : 1,
+                completed: _savedWordsProgress,
                 icon: Icons.bookmark,
                 color: const Color(0xFF51CF66),
               ),
@@ -104,7 +111,7 @@ class _LearnScreenState extends State<LearnScreen> {
                 context,
                 title: 'Kids Dictionary',
                 totalCards: 30,
-                completed: (_wordsLearnedToday * 0.4).round(),
+                completed: _kidsWordsProgress > 30 ? 30 : _kidsWordsProgress,
                 icon: Icons.child_care,
                 color: const Color(0xFF9C27B0),
               ),
@@ -113,7 +120,7 @@ class _LearnScreenState extends State<LearnScreen> {
                 context,
                 title: 'Standard Dictionary',
                 totalCards: 40,
-                completed: (_wordsLearnedToday * 0.6).round(),
+                completed: _standardWordsProgress > 40 ? 40 : _standardWordsProgress,
                 icon: Icons.school,
                 color: const Color(0xFFE91E63),
               ),
@@ -122,7 +129,7 @@ class _LearnScreenState extends State<LearnScreen> {
                 context,
                 title: 'Mixed Practice',
                 totalCards: 60,
-                completed: _totalLearned > 60 ? 60 : _totalLearned,
+                completed: _mixedWordsProgress > 60 ? 60 : _mixedWordsProgress,
                 icon: Icons.shuffle,
                 color: const Color(0xFF00BCD4),
               ),

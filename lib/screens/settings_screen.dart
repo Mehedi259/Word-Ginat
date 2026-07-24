@@ -109,45 +109,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                     },
                   ),
-                  _buildSettingsItem(
-                    icon: Icons.people,
-                    title: 'Friends & Rewards',
-                    subtitle: 'Share with friends & earn free sets',
-                    color: AppTheme.primaryBlue,
-                    onTap: () {},
-                  ),
                 ]),
                 const SizedBox(height: 24),
 
-                // Premium Section
-                _buildSection('PREMIUM', null, [
-                  _buildSettingsItem(
-                    icon: Icons.workspace_premium,
-                    title: 'Upgrade to Premium',
-                    subtitle: 'Unlock all study content',
-                    color: AppTheme.primaryOrange,
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryOrange,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'Premium',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    onTap: () {},
-                  ),
-                ]),
-                const SizedBox(height: 24),
+
 
                 // Support Section
                 _buildSection('SUPPORT', null, [

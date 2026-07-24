@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
+import '../services/storage_service.dart';
+import '../services/notification_service.dart';
 
 class GeneralSettingsScreen extends StatefulWidget {
   const GeneralSettingsScreen({super.key});
@@ -10,10 +12,24 @@ class GeneralSettingsScreen extends StatefulWidget {
 
 class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
   bool _dailyReminder = true;
-  bool _friendActivity = true;
   bool _soundEffects = true;
   bool _autoPlayPronunciation = false;
   double _textSize = 0.5;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  void _loadSettings() {
+    setState(() {
+      _dailyReminder = StorageService.getDailyReminder();
+      _soundEffects = StorageService.getSoundEffects();
+      _autoPlayPronunciation = StorageService.getAutoPlayPronunciation();
+      _textSize = StorageService.getTextSize();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,21 +73,15 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
                       title: 'Daily Reminder',
                       subtitle: 'Get reminded to study',
                       value: _dailyReminder,
-                      onChanged: (value) {
+                      onChanged: (value) async {
+                        await StorageService.setDailyReminder(value);
+                        if (value) {
+                          await NotificationService.scheduleDailyWordNotification();
+                        } else {
+                          await NotificationService.cancelDailyReminder();
+                        }
                         setState(() {
                           _dailyReminder = value;
-                        });
-                      },
-                    ),
-                    const Divider(height: 1),
-                    _buildSwitchTile(
-                      icon: Icons.notifications,
-                      title: 'Friend Activity',
-                      subtitle: 'When friends learn new words',
-                      value: _friendActivity,
-                      onChanged: (value) {
-                        setState(() {
-                          _friendActivity = value;
                         });
                       },
                     ),
@@ -103,7 +113,8 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
                       title: 'Sound Effects',
                       subtitle: 'Button sounds & celebrations',
                       value: _soundEffects,
-                      onChanged: (value) {
+                      onChanged: (value) async {
+                        await StorageService.setSoundEffects(value);
                         setState(() {
                           _soundEffects = value;
                         });
@@ -115,7 +126,8 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
                       title: 'Auto-play Pronunciation',
                       subtitle: 'Play audio when viewing words',
                       value: _autoPlayPronunciation,
-                      onChanged: (value) {
+                      onChanged: (value) async {
+                        await StorageService.setAutoPlayPronunciation(value);
                         setState(() {
                           _autoPlayPronunciation = value;
                         });
@@ -189,7 +201,8 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
                         Expanded(
                           child: Slider(
                             value: _textSize,
-                            onChanged: (value) {
+                            onChanged: (value) async {
+                              await StorageService.setTextSize(value);
                               setState(() {
                                 _textSize = value;
                               });

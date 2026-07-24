@@ -4,12 +4,16 @@ import 'screens/welcome_screen.dart';
 import 'screens/main_screen.dart';
 import 'utils/app_theme.dart';
 import 'services/storage_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize storage service
   await StorageService.init();
+  
+  // Initialize notification service
+  await NotificationService.init();
   
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

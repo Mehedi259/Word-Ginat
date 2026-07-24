@@ -16,6 +16,16 @@ class StorageService {
   static const String _totalWordsLearnedKey = 'total_words_learned';
   static const String _quizScoresKey = 'quiz_scores';
   
+  // General settings keys
+  static const String _dailyReminderKey = 'setting_daily_reminder';
+  static const String _friendActivityKey = 'setting_friend_activity';
+  static const String _soundEffectsKey = 'setting_sound_effects';
+  static const String _autoPlayPronunciationKey = 'setting_auto_play';
+  static const String _textSizeKey = 'setting_text_size';
+
+  // Deck progress prefix
+  static const String _deckProgressPrefix = 'deck_progress_';
+  
   // Initialize SharedPreferences
   static Future<void> init() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -280,6 +290,34 @@ class StorageService {
     return totalPercentage / scores.length;
   }
   
+  // ==================== SETTINGS ====================
+  
+  static bool getDailyReminder() => prefs.getBool(_dailyReminderKey) ?? true;
+  static Future<void> setDailyReminder(bool value) async => await prefs.setBool(_dailyReminderKey, value);
+
+  static bool getFriendActivity() => prefs.getBool(_friendActivityKey) ?? true;
+  static Future<void> setFriendActivity(bool value) async => await prefs.setBool(_friendActivityKey, value);
+
+  static bool getSoundEffects() => prefs.getBool(_soundEffectsKey) ?? true;
+  static Future<void> setSoundEffects(bool value) async => await prefs.setBool(_soundEffectsKey, value);
+
+  static bool getAutoPlayPronunciation() => prefs.getBool(_autoPlayPronunciationKey) ?? true;
+  static Future<void> setAutoPlayPronunciation(bool value) async => await prefs.setBool(_autoPlayPronunciationKey, value);
+
+  static double getTextSize() => prefs.getDouble(_textSizeKey) ?? 0.5;
+  static Future<void> setTextSize(double value) async => await prefs.setDouble(_textSizeKey, value);
+
+  // ==================== DECK PROGRESS ====================
+  
+  static int getDeckProgress(String deckTitle) {
+    return prefs.getInt('$_deckProgressPrefix$deckTitle') ?? 0;
+  }
+  
+  static Future<void> addDeckProgress(String deckTitle, int completedCount) async {
+    final current = getDeckProgress(deckTitle);
+    await prefs.setInt('$_deckProgressPrefix$deckTitle', current + completedCount);
+  }
+
   // ==================== HELPER METHODS ====================
   
   static String _getTodayString() {

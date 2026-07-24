@@ -42,13 +42,13 @@ class OfflineDownloadsScreen extends StatelessWidget {
               _buildDownloadCard(
                 title: 'Advanced Vocabulary',
                 size: '215 MB',
-                isDownloaded: false,
+                isDownloaded: true,
               ),
               const SizedBox(height: 12),
               _buildDownloadCard(
                 title: 'Etymology Database',
                 size: '89 MB',
-                isDownloaded: false,
+                isDownloaded: true,
               ),
               const SizedBox(height: 12),
               _buildDownloadCard(
@@ -82,7 +82,7 @@ class OfflineDownloadsScreen extends StatelessWidget {
                             ),
                             TextSpan(
                               text:
-                                  'Download content to use Word Giant without an internet connection. Audio files are larger but enable pronunciation playback.',
+                                  'Word Giant is a fully offline, self-contained app. All dictionary data, audio pronunciations, and visual assets are bundled and ready to use without an internet connection.',
                             ),
                           ],
                         ),
@@ -147,24 +147,11 @@ class OfflineDownloadsScreen extends StatelessWidget {
             ),
           ),
           if (isDownloaded)
-            TextButton(
-              onPressed: () {},
-              child: const Text(
-                'Remove',
-                style: TextStyle(
-                  color: AppTheme.primaryRed,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-          else
-            ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.download, size: 18),
-              label: const Text('Download'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
-                foregroundColor: Colors.white,
+            const Text(
+              'Downloaded',
+              style: TextStyle(
+                color: AppTheme.primaryGreen,
+                fontWeight: FontWeight.bold,
               ),
             ),
         ],
