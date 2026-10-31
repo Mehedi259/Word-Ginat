@@ -7,6 +7,7 @@ import 'word_detail_screen.dart';
 import 'search_screen.dart';
 import 'saved_screen.dart';
 import 'visual_words_screen.dart';
+import 'learn_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,12 +39,6 @@ class _HomeScreenState extends State<HomeScreen> {
     // Load word of the day
     final word = await DictionaryData.getWordOfTheDay();
     
-    // Load word counts
-    final kidsWords = await DictionaryData.getAllWords(level: DifficultyLevel.easy);
-    final standardWords = await DictionaryData.getAllWords(level: DifficultyLevel.standard);
-    final allWords = await DictionaryData.getAllWords();
-    final visualCount = kidsWords.where((w) => w.imagePath != null).length;
-    
     // Load user stats from storage
     final savedCount = await StorageService.getSavedWordsCount();
     final learnedToday = await StorageService.getWordsLearnedToday();
@@ -53,11 +48,11 @@ class _HomeScreenState extends State<HomeScreen> {
     
     setState(() {
       _wordOfTheDay = word;
-      _kidsWordCount = kidsWords.length;
-      _standardWordCount = standardWords.length;
-      _totalWordCount = allWords.length;
+      _kidsWordCount = DictionaryData.kidsWordsCount;
+      _standardWordCount = DictionaryData.standardWordsCount;
+      _totalWordCount = DictionaryData.totalWordsCount;
       _savedWordCount = savedCount;
-      _visualWordCount = visualCount;
+      _visualWordCount = DictionaryData.visualWordsCount;
       _wordsLearnedToday = learnedToday;
       _dailyGoal = goal;
       _streakCount = streak;
@@ -205,8 +200,10 @@ class _HomeScreenState extends State<HomeScreen> {
               // Today's Goal Card
               GestureDetector(
                 onTap: () {
-                  // Navigate to Learn screen (flashcards)
-                  DefaultTabController.of(context)?.animateTo(2); // Index 2 is Learn screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LearnScreen()),
+                  );
                 },
                 child: Container(
                   width: double.infinity,

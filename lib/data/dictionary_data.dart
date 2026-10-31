@@ -1,165 +1,164 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/word_model.dart';
 
 class DictionaryData {
   static List<WordModel>? _kidsWords;
   static List<WordModel>? _standardWords;
-  static bool _isLoading = false;
+  static bool _isLoadingKids = false;
+  static bool _isLoadingStandard = false;
 
-  // Load dictionary data from JSON files
-  static Future<void> loadDictionaries() async {
-    if (_isLoading) return;
-    _isLoading = true;
+  // Cached constants for lightning-fast UI rendering
+  static const int kidsWordsCount = 123446;
+  static const int standardWordsCount = 146722;
+  static const int totalWordsCount = 270168;
+  static const int visualWordsCount = 2452;
+
+  // Load Kids Dictionary on-demand
+  static Future<void> loadKidsDictionary() async {
+    if (_kidsWords != null || _isLoadingKids) return;
+    _isLoadingKids = true;
 
     try {
-      if (_kidsWords == null || _standardWords == null) {
-        final dictionaryJson = await rootBundle.loadString('assets/data/word_giant_dictionary_v1_025.json');
-        final List<dynamic> dictionaryData = json.decode(dictionaryJson);
-        
-        final kidsMap = <String, WordModel>{};
-        final standardMap = <String, WordModel>{};
-        
-        WordModel mergeWords(WordModel existing, WordModel newWord) {
-          final combinedPos = existing.partOfSpeech.contains(newWord.partOfSpeech) 
-              ? existing.partOfSpeech 
-              : '${existing.partOfSpeech}, ${newWord.partOfSpeech}';
-              
-          final combinedDef = existing.definition == newWord.definition 
-              ? existing.definition 
-              : '${existing.definition}\n\n[${newWord.partOfSpeech}]\n${newWord.definition}';
-              
-          String? combinedKidDef = existing.kidFriendlyDefinition;
-          if (newWord.kidFriendlyDefinition != null) {
-            if (existing.kidFriendlyDefinition == null) {
-              combinedKidDef = newWord.kidFriendlyDefinition;
-            } else if (existing.kidFriendlyDefinition != newWord.kidFriendlyDefinition) {
-              combinedKidDef = '${existing.kidFriendlyDefinition}\n\n[${newWord.partOfSpeech}]\n${newWord.kidFriendlyDefinition}';
-            }
-          }
-
-          return WordModel(
-            word: existing.word,
-            partOfSpeech: combinedPos,
-            definition: combinedDef,
-            kidFriendlyDefinition: combinedKidDef,
-            exampleSentence: existing.exampleSentence ?? newWord.exampleSentence,
-            synonyms: {...existing.synonyms, ...newWord.synonyms}.toList(),
-            antonyms: {...existing.antonyms, ...newWord.antonyms}.toList(),
-            frequencyBand: existing.frequencyBand ?? newWord.frequencyBand,
-            level: existing.level,
-            imagePath: existing.imagePath ?? newWord.imagePath,
-          );
-        }
-
-        for (var item in dictionaryData) {
-          if (item['show_in_easy_mode'] == 'Yes') {
-            final word = WordModel.fromJson(item, level: DifficultyLevel.easy);
-            final key = word.word.toLowerCase();
-            if (!kidsMap.containsKey(key)) {
-              kidsMap[key] = word;
-            } else {
-              kidsMap[key] = mergeWords(kidsMap[key]!, word);
-            }
-          }
-          if (item['show_in_standard_mode'] == 'Yes') {
-            final word = WordModel.fromJson(item, level: DifficultyLevel.standard);
-            final key = word.word.toLowerCase();
-            if (!standardMap.containsKey(key)) {
-              standardMap[key] = word;
-            } else {
-              standardMap[key] = mergeWords(standardMap[key]!, word);
-            }
-          }
-        }
-        
-        _kidsWords = kidsMap.values.toList();
-        _standardWords = standardMap.values.toList();
-      }
-    } catch (e) {
-      print('Error loading dictionaries: $e');
-      // Fallback to sample data if loading fails
-      _kidsWords = _getSampleKidsWords();
-      _standardWords = _getSampleStandardWords();
+      final jsonString = await rootBundle.loadString(
+        'assets/data/Kids_Dictionary_Final_Refined.json',
+      );
+      final List<dynamic> data = json.decode(jsonString);
+      _kidsWords = data
+          .map((item) => WordModel.fromJson(item, level: DifficultyLevel.easy))
+          .toList();
+    } catch (e, stack) {
+      debugPrint('Error loading Kids dictionary: $e\n$stack');
+      _kidsWords ??= _getSampleKidsWords();
+    } finally {
+      _isLoadingKids = false;
     }
+  }
 
-    _isLoading = false;
+  // Load Standard Dictionary on-demand
+  static Future<void> loadStandardDictionary() async {
+    if (_standardWords != null || _isLoadingStandard) return;
+    _isLoadingStandard = true;
+
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/data/Standard_Dictionary_Final_Refined.json',
+      );
+      final List<dynamic> data = json.decode(jsonString);
+      _standardWords = data
+          .map((item) => WordModel.fromJson(item, level: DifficultyLevel.standard))
+          .toList();
+    } catch (e, stack) {
+      debugPrint('Error loading Standard dictionary: $e\n$stack');
+      _standardWords ??= _getSampleStandardWords();
+    } finally {
+      _isLoadingStandard = false;
+    }
+  }
+
+  // Load appropriate dictionaries based on level
+  static Future<void> loadDictionaries({DifficultyLevel? level}) async {
+    if (level == DifficultyLevel.easy) {
+      await loadKidsDictionary();
+    } else if (level == DifficultyLevel.standard) {
+      await loadStandardDictionary();
+    } else {
+      await Future.wait([
+        loadKidsDictionary(),
+        loadStandardDictionary(),
+      ]);
+    }
   }
 
   // Get all words (combined or by level)
   static Future<List<WordModel>> getAllWords({DifficultyLevel? level}) async {
-    await loadDictionaries();
-
     if (level == DifficultyLevel.easy) {
-      return _kidsWords ?? [];
+      await loadKidsDictionary();
+      return _kidsWords ?? _getSampleKidsWords();
     } else if (level == DifficultyLevel.standard) {
-      return _standardWords ?? [];
+      await loadStandardDictionary();
+      return _standardWords ?? _getSampleStandardWords();
     } else {
-      return [...?_kidsWords, ...?_standardWords];
+      await loadDictionaries();
+      return [
+        ...?_kidsWords,
+        ...?_standardWords,
+      ];
     }
   }
 
   // Search words with query and optional level filter
   static Future<List<WordModel>> searchWords(String query, {DifficultyLevel? level}) async {
-    await loadDictionaries();
+    final effectiveLevel = level ?? DifficultyLevel.easy;
+    final List<WordModel> wordsToSearch = await getAllWords(level: effectiveLevel);
 
-    List<WordModel> wordsToSearch;
-    if (level == DifficultyLevel.easy) {
-      wordsToSearch = _kidsWords ?? [];
-    } else if (level == DifficultyLevel.standard) {
-      wordsToSearch = _standardWords ?? [];
-    } else {
-      wordsToSearch = [...?_kidsWords, ...?_standardWords];
-    }
-
-    if (query.isEmpty) {
-      // Return first 100 words if no query
+    final cleanQuery = query.trim().toLowerCase();
+    if (cleanQuery.isEmpty) {
+      // Return first 100 words for instant display
       return wordsToSearch.take(100).toList();
     }
 
-    final searchQuery = query.toLowerCase();
-    final results = wordsToSearch.where((word) {
-      return word.word.toLowerCase().contains(searchQuery);
-    }).take(100).toList(); // Limit to 100 results for performance
+    // Fast search prioritizing prefix matches, then substring matches
+    final prefixMatches = <WordModel>[];
+    final containsMatches = <WordModel>[];
+
+    for (final word in wordsToSearch) {
+      final lower = word.word.toLowerCase();
+      if (lower.startsWith(cleanQuery)) {
+        prefixMatches.add(word);
+        if (prefixMatches.length >= 100) break;
+      } else if (prefixMatches.length + containsMatches.length < 100 && lower.contains(cleanQuery)) {
+        containsMatches.add(word);
+      }
+    }
+
+    return [...prefixMatches, ...containsMatches].take(100).toList();
+  }
+
+  // Get word of the day (from standard or fallback)
+  static Future<WordModel> getWordOfTheDay() async {
+    try {
+      await loadStandardDictionary();
+      final words = _standardWords;
+      if (words != null && words.isNotEmpty) {
+        final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays;
+        final index = dayOfYear.abs() % words.length;
+        return words[index];
+      }
+    } catch (e) {
+      debugPrint('Error getting word of the day: $e');
+    }
+    return _getSampleStandardWords().first;
+  }
+
+  // Get random words for flashcards / study
+  static Future<List<WordModel>> getRandomWords({required int count, DifficultyLevel? level}) async {
+    final words = await getAllWords(level: level);
+    if (words.isEmpty) return _getSampleStandardWords();
+
+    if (words.length <= count) {
+      return List<WordModel>.from(words);
+    }
+
+    // Pick random indices safely without shuffling the entire 146k list in place
+    final results = <WordModel>[];
+    final selectedIndices = <int>{};
+    final now = DateTime.now().microsecondsSinceEpoch;
+    var seed = now;
+
+    while (results.length < count && selectedIndices.length < words.length) {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      final idx = seed % words.length;
+      if (selectedIndices.add(idx)) {
+        results.add(words[idx]);
+      }
+    }
 
     return results;
   }
 
-  // Get word of the day (random word from standard dictionary)
-  static Future<WordModel> getWordOfTheDay() async {
-    await loadDictionaries();
-    
-    final standardWords = _standardWords ?? _getSampleStandardWords();
-    final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays;
-    final index = dayOfYear % standardWords.length;
-    
-    return standardWords[index];
-  }
-
-  // Get random words for flashcards
-  static Future<List<WordModel>> getRandomWords({required int count, DifficultyLevel? level}) async {
-    await loadDictionaries();
-
-    List<WordModel> sourceWords;
-    if (level == DifficultyLevel.easy) {
-      sourceWords = _kidsWords ?? [];
-    } else if (level == DifficultyLevel.standard) {
-      sourceWords = _standardWords ?? [];
-    } else {
-      sourceWords = [...?_kidsWords, ...?_standardWords];
-    }
-
-    if (sourceWords.length <= count) {
-      return sourceWords;
-    }
-
-    // Get random words
-    final random = DateTime.now().millisecondsSinceEpoch;
-    sourceWords.shuffle();
-    return sourceWords.take(count).toList();
-  }
-
-  // Sample data for fallback
+  // Sample data fallback in case assets fail to load
   static List<WordModel> _getSampleKidsWords() {
     return [
       WordModel(

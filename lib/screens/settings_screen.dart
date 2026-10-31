@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
 import '../services/storage_service.dart';
-import '../models/word_model.dart';
 import 'general_settings_screen.dart';
 import 'offline_downloads_screen.dart';
 import 'help_faq_screen.dart';

@@ -9,6 +9,9 @@
 # flutter_local_notifications
 -keep class com.dexterous.** { *; }
 
+# flutter_tts
+-keep class com.tundralabs.fluttertts.** { *; }
+
 # Play Core (required for R8 with Flutter)
 -dontwarn com.google.android.play.core.splitcompat.**
 -dontwarn com.google.android.play.core.splitinstall.**

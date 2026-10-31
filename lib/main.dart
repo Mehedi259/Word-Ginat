@@ -9,16 +9,29 @@ import 'services/notification_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize storage service
-  await StorageService.init();
+  // Initialize storage service safely
+  try {
+    await StorageService.init();
+  } catch (e) {
+    debugPrint('Error initializing StorageService: $e');
+  }
   
-  // Initialize notification service
-  await NotificationService.init();
+  // Initialize notification service safely
+  try {
+    await NotificationService.init();
+  } catch (e) {
+    debugPrint('Error initializing NotificationService: $e');
+  }
   
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  try {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  } catch (e) {
+    debugPrint('Error setting orientations: $e');
+  }
+
   runApp(const MyApp());
 }
 
